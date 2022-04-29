@@ -1,0 +1,4 @@
+%compile_commands.json
+%cc -std=c++17
+%h -x
+%h c++-header
