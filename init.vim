@@ -1,29 +1,29 @@
 set encoding=utf-8
 set number
 set relativenumber
-set expandtab
-set tabstop=2
-set shiftwidth=2
-set softtabstop=2
+set expandtab ts=4 sw=4 ai
+"set tabstop=2
+"set shiftwidth=2
+"set softtabstop=2
 set ignorecase
 set smartcase
 set notimeout
 set mouse=a
 
+set signcolumn=number
+
 let mapleader = "\<SPACE>" " defualt ,
 
-if empty(glob('~/.config/nvim/autoload/plug.vim'))
-  :exe '!curl -fLo ~/.config/nvim/autoload/plug.vim --create-dirs
-              \ https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
-  au VimEnter * PlugInstall --sync | source $MYVIMRC
-endif
+call plug#begin()
+" The default plugin directory will be as follows:
+"   - Vim (Linux/macOS): '~/.vim/plugged'
+"   - Vim (Windows): '~/vimfiles/plugged'
+"   - Neovim (Linux/macOS/Windows): stdpath('data') . '/plugged'
+" You can specify a custom plugin directory by passing it as the argument
+"   - e.g. `call plug#begin('~/.vim/plugged')`
+"   - Avoid using standard Vim directory names like 'plugin'
 
-" =======================
-" ===  plugins  begin ===
-" =======================
-call plug#begin('~/.config/nvim/plugged')
-  " terminal
-  Plug 'skywind3000/vim-terminal-help'
+" Make sure you use single quotes
 
   " highlight
   Plug 'cateduo/vsdark.nvim'
@@ -32,36 +32,45 @@ call plug#begin('~/.config/nvim/plugged')
   Plug 'preservim/nerdtree'
 
   " lsp
-  Plug 'neoclide/coc.nvim', {'branch': 'release'}
+  " Plug 'neoclide/coc.nvim', {'branch': 'master', 'do': 'yarn install --frozen-lockfile'}
+  Plug 'neoclide/coc.nvim', {'tag': 'v0.0.82', 'do': 'yarn install --frozen-lockfile'}
+
+  " auto indent
+  Plug 'Yggdroot/indentLine'
 
   " file finder
-  Plug 'Yggdroot/LeaderF', { 'do': ':LeaderfInstallCExtension' }
+  "Plug 'Yggdroot/LeaderF' ", { 'do': ':LeaderfInstallCExtension' }
+  "Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 
-  " format
+  Plug 'nvim-lua/plenary.nvim'
+  Plug 'nvim-telescope/telescope.nvim'
+
+  " open-ai chatgpt
+  Plug 'madox2/vim-ai'
+
+  " multi-windows
+  Plug 'nvim-tree/nvim-web-devicons'
+  Plug 'akinsho/bufferline.nvim', { 'tag': '*' }
+
+  " tagbar
+  Plug 'majutsushi/tagbar'
+
+  " clang-format
   Plug 'rhysd/vim-clang-format'
+
+" Initialize plugin system
+" - Automatically executes `filetype plugin indent on` and `syntax enable`.
 call plug#end()
-" =======================
-" ===   plugins  end  ===
-" =======================
+" You can revert the settings after the call like so:
+"   filetype indent off   " Disable file-type-specific indentation
+"   syntax off            " Disable syntax highlighting
+
 
 " ==== rhysd/vim-clang-format ====
 let g:clang_format#command = 'clang-format'
 nmap <F4> :ClangFormat<cr>
 autocmd FileType c ClangFormatAutoEnable
 let g:clang_format#detect_style_file = 1
-
-" ==== Yggdroot/LeaderF ====
-let g:Lf_WindowPosition='right'
-let g:Lf_PreviewInPopup=1
-let g:Lf_CommandMap = {
-\   '<C-p>': ['<C-k>'],
-\   '<C-k>': ['<C-p>'],
-\   '<C-j>': ['<C-n>']
-\}
-nmap <leader>f :Leaderf file<CR>
-nmap <leader>b :Leaderf! buffer<CR>
-nmap <leader>F :Leaderf rg<CR>
-let g:Lf_DevIconsFont = "DroidSansMono Nerd Font Mono"
 
 " ==== preservim/nerdtree ====
 nnoremap <LEADER>e :NERDTreeToggle<CR>
@@ -82,68 +91,12 @@ let g:coc_global_extensions = [
       \ 'coc-pyright'
       \ ]
 
-set signcolumn=number
-" <TAB> to select candidate forward or
-" pump completion candidate
-inoremap <silent><expr> <TAB>
-      \ pumvisible() ? "\<C-n>" :
-      \ <SID>check_back_space() ? "\<TAB>" :
-      \ coc#refresh()
-" <s-TAB> to select candidate backward
-inoremap <expr><s-TAB> pumvisible() ? "\<C-p>" : "\<C-h>"
-function! s:check_back_space() abort
-  let col = col('.')-1
-  return !col || getline('.')[col - 1] =~# '\s'
-endfunction
-
-" <CR> to comfirm selected candidate
-" only when there's selected complete item
-if exists('*complete_info')
-  inoremap <silent><expr> <CR> complete_info(['selected'])['selected'] != -1 ? "\<C-y>" : "\<C-g>u\<CR>"
-endif
-
-nnoremap <silent> K :call <SID>show_documentation()<CR>
-function! s:show_documentation()
-  if(index(['vim', 'help'], &filetype) >= 0)
-    execute 'h '.expand('<cword>')
-  elseif (coc#rpc#ready())
-    call CocActionAsync('doHover')
-  else
-    execute '!' . &keywordprg . " " . expand('<cword>')
-  endif
-endfunction
-
-" highlight link CocHighlightText Visual
-" autocmd CursorHold * silent call CocActionAsync('highlight')   " TODO
 
 nmap <leader>rn <Plug>(coc-rename)
 xmap <leader>f <Plug>(coc-format-selected)
+command! -nargs=0 Format :call CocAction('format')nmap <leader>rn <Plug>(coc-rename)
+xmap <leader>f <Plug>(coc-format-selected)
 command! -nargs=0 Format :call CocAction('format')
-
-augroup mygroup
-  autocmd!
-  autocmd FileType typescript,json setl formatexpr=CocAction('formatSelected')
-  autocmd User CocJumpPlaceholder call CocActionAsync('showSignatureHelp')
-augroup end
-
-" diagnostic info
-nnoremap <silent><nowait> <LEADER>d :CocList diagnostics<CR>
-nmap <silent> <LEADER>- <Plug>(coc-diagnostic-prev)
-nmap <silent> <LEADER>= <Plug>(coc-diagnostic-next)
-nmap <LEADER>qf <Plug>(coc-fix-current)
-
-" Remap <C-f> and <C-b> for scroll float windows/popups.
-if has('nvim-0.4.0') || has('patch-8.2.0750')
-  nnoremap <silent><nowait><expr> <C-f> coc#float#has_scroll() ? coc#float#scroll(1) : "\<C-f>"
-  nnoremap <silent><nowait><expr> <C-b> coc#float#has_scroll() ? coc#float#scroll(0) : "\<C-b>"
-  inoremap <silent><nowait><expr> <C-f> coc#float#has_scroll() ? "\<C-r>=coc#float#scroll(1)\<CR>" : "\<Right>"
-  inoremap <silent><nowait><expr> <C-b> coc#float#has_scroll() ? "\<C-r>=coc#float#scroll(0)\<CR>" : "\<Left>"
-  vnoremap <silent><nowait><expr> <C-f> coc#float#has_scroll() ? coc#float#scroll(1) : "\<C-f>"
-  vnoremap <silent><nowait><expr> <C-b> coc#float#has_scroll() ? coc#float#scroll(0) : "\<C-b>"
-endif
-
-" statusline support
-" set statusline^=%{coc#status()}%{get(b:,'coc_current_function','')}  "TODO
 
 " GoTo code navigation.
 nmap <silent> gd <Plug>(coc-definition)
@@ -152,17 +105,55 @@ nmap <silent> gy <Plug>(coc-type-definition)
 nmap <silent> gi <Plug>(coc-implementation)
 nmap <silent> gr <Plug>(coc-references)
 
-function! s:generate_compile_commands()
-  if empty(glob('CMakeLists.txt'))
-    echo "Can't find CMakeLists.txt"
-    return
-  endif
-  if empty(glob('.vscode'))
-    execute 'silent !mkdir .vscode'
-  endif
-  execute '!cmake -DCMAKE_BUILD_TYPE=debug
-      \ -DCMAKE_EXPORT_COMPILE_COMMANDS=1 -S . -B .vscode'
+autocmd FileType python let b:coc_root_patterns = ['.git', '.env', 'venv', '.venv', 'setup.cfg', 'setup.py', 'pyproject.toml', 'pyrightconfig.json']
+
+" Use tab for trigger completion with characters ahead and navigate
+" NOTE: There's always complete item selected by default, you may want to enable
+" no select by `"suggest.noselect": true` in your configuration file
+" NOTE: Use command ':verbose imap <tab>' to make sure tab is not mapped by
+" other plugin before putting this into your config
+inoremap <silent><expr> <TAB>
+      \ coc#pum#visible() ? coc#pum#next(1) :
+      \ CheckBackspace() ? "\<Tab>" :
+      \ coc#refresh()
+
+inoremap <expr><S-TAB> coc#pum#visible() ? coc#pum#prev(1) : "\<C-h>"
+
+" Make <CR> to accept selected completion item or notify coc.nvim to format
+" <C-g>u breaks current undo, please make your own choice
+inoremap <silent><expr> <CR> coc#pum#visible() ? coc#pum#confirm()
+                              \: "\<C-g>u\<CR>\<c-r>=coc#on_enter()\<CR>"
+
+function! CheckBackspace() abort
+  let col = col('.') - 1
+  return !col || getline('.')[col - 1]  =~# '\s'
 endfunction
-command! -nargs=0 Gcmake :call s:generate_compile_commands()
+
+" let g:indentLine_leadingSpaceEnabled = 1
+
+nnoremap <leader>ff <cmd>Telescope find_files<cr>
+nnoremap <leader>fg <cmd>Telescope live_grep<cr>
+nnoremap <leader>fb <cmd>Telescope buffers<cr>
+nnoremap <leader>fh <cmd>Telescope help_tags<cr>
+
+" bufferline setting
+nnoremap <leader>1 :BufferLineGoToBuffer 1<cr>
+nnoremap <leader>2 :BufferLineGoToBuffer 2<cr>
+nnoremap <leader>3 :BufferLineGoToBuffer 3<cr>
+nnoremap <leader>4 :BufferLineGoToBuffer 4<cr>
+nnoremap <leader>0 :BufferLineCycleNext<cr>
+
+" tagbar
+nmap <leader>t :TagbarToggle<cr>
+
+set termguicolors
+lua << EOF
+require("bufferline").setup{
+    options = {
+--        mode = "tabs",
+        number = "ordinal",
+    }
+}
+EOF
 
 
