@@ -83,7 +83,8 @@ apt-get install -y --no-install-recommends \
   ccls \
   vim \
   libfuse2 \
-  ripgrep
+  ripgrep \
+  universal-ctags
 
 apt-get clean
 rm -rf /var/lib/apt/lists/*
