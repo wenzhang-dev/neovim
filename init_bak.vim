@@ -9,9 +9,6 @@ set notimeout
 set mouse=a
 set nofoldenable
 
-"set number
-"set relativenumber
-"set signcolumn=number
 "set clipboard=unnamedplus
 
 let mapleader = "\<SPACE>" " defualt ,
@@ -38,7 +35,7 @@ call plug#begin()
   Plug 'neoclide/coc.nvim', {'tag': 'v0.0.82', 'do': 'yarn install --frozen-lockfile'}
 
   " auto indent
-  Plug 'Yggdroot/indentLine'
+  Plug 'Yggdroot/indentLine', {'on': 'IndentLinesToggle'}
 
   " file finder
   "Plug 'Yggdroot/LeaderF' ", { 'do': ':LeaderfInstallCExtension' }
@@ -136,7 +133,7 @@ function! CheckBackspace() abort
   return !col || getline('.')[col - 1]  =~# '\s'
 endfunction
 
-function! TogglePretty()
+function! PrettyToggle()
   let l:number = &number
   let l:relativenumber = &relativenumber
   let l:signcolumn = &signcolumn
@@ -145,20 +142,23 @@ function! TogglePretty()
     setlocal nonumber
     setlocal norelativenumber
     setlocal signcolumn=no
-    let g:indentLine_enabled = 0
   else
     setlocal number
     setlocal relativenumber
     setlocal signcolumn=number
-    let g:indentLine_enabled = 1
   endif
+
+  if exists(':IndentLinesToggle')
+    silent IndentLinesToggle
+  endif
+
 endfunction
 
-"let g:indentLine_leadingSpaceEnabled = 0
-let g:indentLine_enabled = 0
 
-call TogglePretty()
-map <leader>y :call TogglePretty()<CR>
+"let g:indentLine_enabled = 1
+call PrettyToggle()
+
+map <leader>y :call PrettyToggle()<CR>
 
 nnoremap <leader>ff <cmd>Telescope find_files<cr>
 nnoremap <leader>fg <cmd>Telescope live_grep<cr>
