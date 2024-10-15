@@ -155,7 +155,7 @@ function! PrettyToggle()
 endfunction
 
 
-"let g:indentLine_enabled = 1
+let g:indentLine_enabled = 0
 call PrettyToggle()
 
 map <leader>y :call PrettyToggle()<CR>
